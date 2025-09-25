@@ -1,3 +1,8 @@
+[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/uwidcit/flaskmvc)
+<a href="https://render.com/deploy?repo=https://github.com/uwidcit/flaskmvc">
+  <img src="https://render.com/images/deploy-to-render-button.svg" alt="Deploy to Render">
+</a>
+
 ![Tests](https://github.com/uwidcit/flaskmvc/actions/workflows/dev.yml/badge.svg)
 
 # Flask MVC Template
@@ -72,6 +77,100 @@ def create_user_command(username, password):
     print(f'{username} created!')
 
 app.cli.add_command(user_cli) # add the group to the cli
+
+@app.cli.command("create_student", help="Creates a student")
+@click.argument("username", default="jim")
+@click.argument("password", default="jimpass")
+def create_student_command(username, password):
+    stu =  Student(username=username, password=password)
+    db.session.add(stu)
+    db.session.commit()
+    print(f'{username} created!')
+
+@app.cli.command("create_staff", help="Creates a staff")
+@click.argument("username", default="tim")
+@click.argument("password", default="timpass")
+def create_student_command(username, password):
+    staff =  Staff(username=username, password=password)
+    db.session.add(staff)
+    db.session.commit()
+    print(f'{username} created!')
+
+@app.cli.command("list", help="Lists users in the database")
+@click.argument("format", default="string")
+def list_user_command(format):
+    if format == 'string':
+        emp = User.query.all()
+        stu = Student.query.all()
+        staff =  Staff.query.all()
+        list = Shortlist.query.all()
+        inter = Intern.query.all()
+        print('this is emp ' +str(emp))
+        print("this is students " + str(stu))
+        print("this is staff " + str(staff))
+        print("this is SHORTLIST " + str(list))
+        print("this is inter" + str(inter))
+
+app.cli.add_command(user_cli) # add the group to the cli
+
+@app.cli.command("create_intern", help="Creates an intern application")
+def create_intern():
+    from App.models import Shortlist
+    emp = User.query.all()
+    print('list of emp ' +str(emp))
+    employer = input('Please enter emp id :')
+    emp = User.query.get(employer)
+    print(str(emp))
+    title = input('Please enter intern title:')
+    description = input('Please enter intern description:')
+    oo= emp.create_intern(title,description)
+    print(str(oo))
+
+@app.cli.command("add_student", help=" Add student to an internship shortlist")
+def add_student():
+    staff = Staff.query.all()
+    print('list of staff ' +str(staff))
+    staff_id = input('please enter a staff id:')
+    stafff = Staff.query.get(staff_id)
+    print(str(stafff))
+    list= Intern.query.all()
+    print('list of intern '+ str(list))
+    int_id= input('please enter an intern id:')
+    inter= Intern.query.filter_by(id=int_id).first()
+    print(str(inter.id))
+    skl = Student.query.all()
+    print('list of students '+ str(skl))
+    student_id =  input('please enter a student id:')
+    stu = Student.query.get(student_id)
+    p = stafff.add_intern(intern_id=inter.id,student_id=stu.id)
+    print(str(p))
+
+@app.cli.command("evaluate_shortlist", help=" accept/reject student from shortlist")
+def evaluate_shortlist():
+    emp = User.query.all()
+    print(('list of emp ' + str(emp)))
+    employer = input('please entera employer id: ')
+    emp1 = User.query.get(employer)
+    ll = Intern.query.filter_by(user_id=emp1.id).first()
+    print('list of inter: '+ str(ll))
+    inter_is=input('please enter a intern id:')
+    shortlist = Shortlist.query.filter_by(intern_id=inter_is).all()
+    print('list of shortlist '+ str(shortlist))
+    list_id = input('please enter a shortlist id: ')
+    sl = Shortlist.query.get(list_id)
+    response = input('accept or reject: ')
+    if response == 'accept' or response == 'reject':
+        emp1.review_app(response,sl)
+        print(str(sl))
+
+@app.cli.command("view_reply", help=" view shortlisted positions and employer response")
+def view_reply():
+    student = Student.query.all()
+    print('list of students  ' + str(student))
+    student_id = input('please enter student id:')
+    stu = Student.query.get(student_id)
+    list = Shortlist.query.filter_by(student_id=stu.id).all()
+    print('list of shortlist :' + str(list))
 
 ```
 
